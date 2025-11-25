@@ -24,11 +24,25 @@ async function run() {
         await client.connect();
 
         const db = client.db("phone_kinoo");
+        const phonesCollection = db.collection("phones");
+
+        app.get("/latest-phones", async(req, res) => {
+            const cursor = phonesCollection.find().sort({publishedAt: -1}).limit(6);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get("/phones", async(req, res) => {
+            const cursor = phonesCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        await client.close();
+    }
+    catch (error) {
+        console.error(error);
     }
 }
 run().catch(console.dir);
