@@ -25,17 +25,32 @@ async function run() {
 
         const db = client.db("phone_kinoo");
         const phonesCollection = db.collection("phones");
+        const usersCollection = db.collection("users");
 
-        app.get("/latest-phones", async(req, res) => {
-            const cursor = phonesCollection.find().sort({publishedAt: -1}).limit(6);
+        app.get("/latest-phones", async (req, res) => {
+            const cursor = phonesCollection.find().sort({ publishedAt: -1 }).limit(6);
             const result = await cursor.toArray();
             res.send(result);
         })
 
-        app.get("/phones", async(req, res) => {
+        app.get("/phones", async (req, res) => {
             const cursor = phonesCollection.find();
             const result = await cursor.toArray();
             res.send(result);
+        })
+
+        app.post("/users", async (req, res) => {
+            const newUser = req.body;
+            const email = req.body.email;
+            const query = { email: email };
+            const existingUser = await usersCollection.findOne(query);
+            if (existingUser) {
+                res.send({ message: 'User already Exists.' })
+            }
+            else {
+                const result = await usersCollection.insertOne(newUser);
+                res.send(result);
+            }
         })
 
         await client.db("admin").command({ ping: 1 });
