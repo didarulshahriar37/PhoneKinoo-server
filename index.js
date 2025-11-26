@@ -21,7 +21,7 @@ const client = new MongoClient(uri, {
 });
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
 
         const db = client.db("phone_kinoo");
         const phonesCollection = db.collection("phones");
@@ -34,8 +34,21 @@ async function run() {
         })
 
         app.get("/phones", async (req, res) => {
-            const cursor = phonesCollection.find();
+
+            const query = {};
+
+            if (req.query.email) {
+                query["email"] = req.query.email;
+            }
+
+            const cursor = phonesCollection.find(query);
             const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.post("/phones", async (req, res) => {
+            const newPhone = req.body;
+            const result = await phonesCollection.insertOne(newPhone);
             res.send(result);
         })
 
@@ -53,7 +66,8 @@ async function run() {
             }
         })
 
-        await client.db("admin").command({ ping: 1 });
+
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     }
     catch (error) {
